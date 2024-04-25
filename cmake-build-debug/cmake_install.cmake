@@ -1,4 +1,4 @@
-# Install script for directory: /Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake
+# Install script for directory: /Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,22 +39,22 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cmake-build-debug/complexities/cmake_install.cmake")
+  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cmake-build-debug/complexities/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cmake-build-debug/libds/cmake_install.cmake")
+  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cmake-build-debug/libds/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cmake-build-debug/tests/cmake_install.cmake")
+  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cmake-build-debug/tests/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cmake-build-debug/cli/cmake_install.cmake")
+  include("/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cmake-build-debug/cli/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -65,5 +65,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

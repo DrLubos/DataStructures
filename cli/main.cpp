@@ -28,11 +28,11 @@ std::vector<std::unique_ptr<ds::tests::Test>> createTests()
 
 	// TODO 06
 	amt->add_test(std::make_unique<ds::tests::ExplicitHierarchyTest>());
-	//amt->add_test(std::make_unique<ds::tests::HierarchyTest>());
+	amt->add_test(std::make_unique<ds::tests::HierarchyTest>());
 
 	// TODO 07
-	// adt->add_test(std::make_unique<ds::tests::ListTest>());
-	// adt->add_test(std::make_unique<ds::tests::ArraysTest>());
+	adt->add_test(std::make_unique<ds::tests::ListTest>());
+	adt->add_test(std::make_unique<ds::tests::ArraysTest>());
 
 	// TODO 08
 	// adt->add_test(std::make_unique<ds::tests::StackTest>());

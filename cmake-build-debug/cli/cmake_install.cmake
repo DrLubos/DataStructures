@@ -1,4 +1,4 @@
-# Install script for directory: /Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/AUS-CMake/cli
+# Install script for directory: /Users/lubos/Library/Mobile Documents/com~apple~CloudDocs/UNIZA/AuS/Projekt/AUS-CMake Stvrtok/cli
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
