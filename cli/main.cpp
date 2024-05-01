@@ -35,9 +35,9 @@ std::vector<std::unique_ptr<ds::tests::Test>> createTests()
 	adt->add_test(std::make_unique<ds::tests::ArraysTest>());
 
 	// TODO 08
-	// adt->add_test(std::make_unique<ds::tests::StackTest>());
-	// adt->add_test(std::make_unique<ds::tests::QueueTest>());
-	// adt->add_test(std::make_unique<ds::tests::PriorityQueueTest>());
+	adt->add_test(std::make_unique<ds::tests::StackTest>());
+	adt->add_test(std::make_unique<ds::tests::QueueTest>());
+	adt->add_test(std::make_unique<ds::tests::PriorityQueueTest>());
 
 	// TODO 09
 	// adt->add_test(std::make_unique<ds::tests::SequenceTableTest>());
