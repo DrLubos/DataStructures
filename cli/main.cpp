@@ -1,5 +1,7 @@
 #include <tests/root.h>
 #include <complexities/list_analyzer.h>
+#include <complexities/table_analyzer.h>
+
 
 #ifndef ANALYZER_OUTPUT
 #define ANALYZER_OUTPUT "."
@@ -40,10 +42,10 @@ std::vector<std::unique_ptr<ds::tests::Test>> createTests()
 	adt->add_test(std::make_unique<ds::tests::PriorityQueueTest>());
 
 	// TODO 09
-	// adt->add_test(std::make_unique<ds::tests::SequenceTableTest>());
+	adt->add_test(std::make_unique<ds::tests::SequenceTableTest>());
 
     // TODO 11
-	// adt->add_test(std::make_unique<ds::tests::NonSequenceTableTest>());
+	adt->add_test(std::make_unique<ds::tests::NonSequenceTableTest>());
 
 	// TODO 12
 	// adt->add_test(std::make_unique<ds::tests::SortTest>());
@@ -61,7 +63,7 @@ std::vector<std::unique_ptr<ds::utils::Analyzer>> createAnalyzers()
 	std::vector<std::unique_ptr<ds::utils::Analyzer>> analyzers;
 
     // TODO 01
-	// analyzers.emplace_back(std::make_unique<ds::utils::ListsAnalyzer>());
+	analyzers.emplace_back(std::make_unique<ds::utils::TabsAnalyzer>());
 
 	return analyzers;
 }

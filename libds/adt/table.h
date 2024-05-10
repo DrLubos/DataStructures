@@ -805,25 +805,44 @@ namespace ds::adt {
     template<typename K, typename T, typename ItemType>
     void GeneralBinarySearchTree<K, T, ItemType>::insert(const K& key, T data)
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BSTNodeType* newNode = nullptr;
+        if (this->isEmpty()) {
+            newNode = &this->getHierarchy()->emplaceRoot();
+        } else {
+            BSTNodeType* father = nullptr;
+            if (tryFindNodeWithKey(key, father)) {
+                throw structure_error("Key already exists");
+            }
+            newNode = (key > father->data_.key_) ? &this->getHierarchy()->insertRightSon(*father) : &this->getHierarchy()->insertLeftSon(*father);
+        }
+        newNode->data_.key_ = key;
+        newNode->data_.data_ = data;
+        ++size_;
+        balanceTree(newNode);
     }
 
     template<typename K, typename T, typename ItemType>
     bool GeneralBinarySearchTree<K, T, ItemType>::tryFind(const K& key, T*& data) const
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BSTNodeType* nodeWithKey = nullptr;
+        if (!tryFindNodeWithKey(key, nodeWithKey)) {
+            return false;
+        }
+        data = &nodeWithKey->data_.data_;
+        return true;
     }
 
     template<typename K, typename T, typename ItemType>
     T GeneralBinarySearchTree<K, T, ItemType>::remove(const K& key)
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BSTNodeType* node = nullptr;
+        if (!this->tryFindNodeWithKey(key, node)) {
+            throw structure_error("No such key");
+        }
+        T result = node->data_.data_;
+        removeNode(node);
+        --size_;
+        return result;
     }
 
     template <typename K, typename T, typename ItemType>
@@ -855,9 +874,26 @@ namespace ds::adt {
     template<typename K, typename T, typename ItemType>
     bool GeneralBinarySearchTree<K, T, ItemType>::tryFindNodeWithKey(const K& key, BSTNodeType*& node) const
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        if (this->isEmpty()) {
+            return false;
+        }
+        node = this->getHierarchy()->accessRoot();
+        while (node->data_.key_ != key && !this->getHierarchy()->isLeaf(*node)) {
+            if (key < node->data_.key_) {
+                if (node->left_ != nullptr) {
+                    node = node->left_;
+                } else {
+                    return false;
+                }
+            } else {
+                if (node->right_ != nullptr) {
+                    node = node->right_;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return node->data_.key_ == key;
     }
 
     template<typename K, typename T, typename ItemType>
