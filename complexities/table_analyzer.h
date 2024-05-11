@@ -125,11 +125,14 @@ namespace ds::utils {
         int randomIndex = distrib(gen);
         std::cout << "List size: " << this->list.size() << "\nRand inde: " << randomIndex << std::endl;
         int valueFromList = this->list.access(randomIndex);
-        if (structure.contains(valueFromList)) {
-            structure.remove(valueFromList);
-        }
-        //structure.remove(valueFromList);
+//        if (structure.contains(valueFromList)) {
+//            structure.remove(valueFromList);
+//        } else {
+//            std::cout << "Neni v tabulce\n";
+//        }
+        structure.remove(valueFromList);
         this->list.remove(randomIndex);
+        std::cout << "List size: " << this->list.size() << "\n";
     }
 
     //----------
@@ -137,10 +140,6 @@ namespace ds::utils {
     inline TabsAnalyzer::TabsAnalyzer() :
             CompositeAnalyzer("Tabs")
     {
-        //this->addAnalyzer(std::make_unique<ListInsertAnalyzer<std::vector<int>>>("vector-insert"));
-        //this->addAnalyzer(std::make_unique<TabInsertAnalyzer<ds::adt::SortedSTab<int, int>>>("tab-insert"));
-        //this->addAnalyzer(std::make_unique<ListRemoveAnalyzer<std::vector<int>>>("vector-remove"));
-        //this->addAnalyzer(std::make_unique<ds::adt::SortedSequenceTable<int, int>>>("tab-remove"));
         this->addAnalyzer(std::make_unique<TabInsertAnalyzer<ds::adt::SortedSTab<int, int>>>("tab-insert"));
         this->addAnalyzer(std::make_unique<TabRemoveAnalyzer<ds::adt::SortedSequenceTable<int, int>>>("tab-remove"));
     }
