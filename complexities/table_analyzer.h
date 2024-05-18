@@ -1,13 +1,20 @@
+
 #pragma once
 
 #include <complexities//complexity_analyzer.h>
 #include <libds/adt/table.h>
 #include <libds/adt/list.h>
-#include <complexities/list_analyzer.h>
+#include <limits>
+//#include <complexities/list_analyzer.h>
 
-namespace ds::utils {
+namespace ds::utils
+{
+    /**
+	* @brief Common base for list analyzers.
+	*/
     template<class TabType>
-    class TabAnalyzer : public ComplexityAnalyzer<TabType> {
+    class TabAnalyzer : public ComplexityAnalyzer<TabType>
+    {
     protected:
         explicit TabAnalyzer(const std::string &name);
 
@@ -15,7 +22,6 @@ namespace ds::utils {
         void growToSize(TabType &structure, size_t size) override;
 
         size_t getRandomIndex() const;
-
         int getRandomData() const;
 
     protected:
@@ -23,20 +29,27 @@ namespace ds::utils {
         std::default_random_engine rngIndex_;
         size_t index_;
         int data_;
-        ds::adt::ImplicitList<int> list;
+        std::vector<int> keyList_;
     };
-
+    /**
+	* @brief Analyzes complexity of an insertion at the beginning.
+	*/
     template<class TabType>
-    class TabInsertAnalyzer : public TabAnalyzer<TabType> {
+    class TabInsertAnalyzer : public TabAnalyzer<TabType>
+    {
     public:
-        explicit TabInsertAnalyzer(const std::string &name);
+        explicit TabInsertAnalyzer(const std::string& name);
 
     protected:
-        void executeOperation(TabType &structure) override;
+        void executeOperation(TabType& structure) override;
     };
 
+    /**
+	* @brief Analyzes complexity of an erasure at the beginning.
+	*/
     template<class TabType>
-    class TabRemoveAnalyzer : public TabAnalyzer<TabType> {
+    class TabRemoveAnalyzer : public TabAnalyzer<TabType>
+    {
     public:
         explicit TabRemoveAnalyzer(const std::string &name);
 
@@ -44,42 +57,61 @@ namespace ds::utils {
         void executeOperation(TabType &structure) override;
     };
 
+    /**
+	* @brief Container for all list analyzers.
+	*/
     class TabsAnalyzer : public CompositeAnalyzer
     {
-        public:
+    public:
         TabsAnalyzer();
     };
 
-    template<class List>
-    TabAnalyzer<List>::TabAnalyzer(const std::string& name) :
-            ComplexityAnalyzer<List>(name),
+    //----------
+
+    template<class TabType>
+    TabAnalyzer<TabType>::TabAnalyzer(const std::string& name) :
+            ComplexityAnalyzer<TabType>(name),
             rngData_(144),
             rngIndex_(144),
             index_(0),
             data_(0)
     {
-        ComplexityAnalyzer<List>::registerBeforeOperation([this](List& list)
-                                                          {
-                                                              std::uniform_int_distribution<size_t> indexDist(0, list.size() - 1);
-                                                              index_ = indexDist(rngIndex_);
-                                                              data_ = rngData_();
-                                                          });
+        this->keyList_.reserve(2147483645);
+        for (int i = 1; i < 147483645; i++)
+        {
+            //std::cout << "Inserting " << i << "\n";
+            this->keyList_.push_back(i);
+        }
+        ComplexityAnalyzer<TabType>::registerBeforeOperation([this](TabType& list)
+                                                             {
+                                                                 std::uniform_int_distribution<size_t> indexDist(0, list.size() - 1);
+                                                                 index_ = indexDist(rngIndex_);
+                                                                 data_ = rngData_();
+                                                             });
+        std::cout << "List size: " << this->keyList_.size() << "\n";
     }
-
 
     template<typename TabType>
     void TabAnalyzer<TabType>::growToSize(TabType& structure, size_t size) {
+        //for (int i = 1; i <= size; i++) {
+        //    this->keyList_.push_back(i);
+        //}
+        //std::shuffle(this->keyList_.begin(), this->keyList_.end(), std::mt19937(std::random_device()()));
         const size_t toInsert = size - structure.size();
-        int key = 0;
-        int value = 0;
         for (size_t i = 0; i < toInsert; ++i)
         {
-            key = rngData_();
-            value = rngData_();
+            //key = rngData_();
+            int key = this->keyList_.back();
+            this->keyList_.pop_back();
+            structure.insert(key, rngData_());
+            //keyList_.push_back(key);
             //std::cout << "Key: " << key << " Value: " << value << "\n";
-            structure.insert(key, value);
-            list.insertLast(key);
         }
+        //this->keyList_.clear();
+        //for (int i = 1; i <= size; i++) {
+        //   this->keyList_.push_back(i*structure.size());
+        //}
+        //std::cout << "Grow to size List size: " << this->keyList_.size() << "\n";
     }
 
     template<class List>
@@ -104,7 +136,10 @@ namespace ds::utils {
     void TabInsertAnalyzer<List>::executeOperation(List& structure)
     {
         auto data = this->getRandomData();
-        structure.insert(this->rngData_(), data);
+        auto key = this->keyList_.back();
+        //std::cout << "Key: " << key << " Value: " << data << "\n" << "List size: " << this->keyList_.size() << "\nStructure size: " << structure.size() << "\n";
+        structure.insert(key, data);
+        this->keyList_.pop_back();
     }
 
     template <class List>
@@ -121,18 +156,19 @@ namespace ds::utils {
         }
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(0, this->list.size()- 1);
+        std::uniform_int_distribution<> distrib(0, this->keyList_.size()- 1);
         int randomIndex = distrib(gen);
-        std::cout << "List size: " << this->list.size() << "\nRand inde: " << randomIndex << std::endl;
-        int valueFromList = this->list.access(randomIndex);
+        std::cout << "List size: " << this->keyList_.size() << "\nRand inde: " << randomIndex << std::endl;
+        int valueFromList = this->keyList_[randomIndex];
 //        if (structure.contains(valueFromList)) {
 //            structure.remove(valueFromList);
 //        } else {
 //            std::cout << "Neni v tabulce\n";
 //        }
         structure.remove(valueFromList);
-        this->list.remove(randomIndex);
-        std::cout << "List size: " << this->list.size() << "\n";
+        //this->keyList_.remove(randomIndex);
+        this->keyList_.erase(this->keyList_.begin() + randomIndex);
+        std::cout << "List size: " << this->keyList_.size() << "\n";
     }
 
     //----------
