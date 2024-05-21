@@ -1,6 +1,7 @@
 /cmake-build-debug/
-*./DS_Store
+*/.DS_Store
 *.csv
 */cmake-build-debug/*
 cmake-build-debug/*
 */cmake-build-debug/
+.DS_Store
