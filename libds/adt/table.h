@@ -966,8 +966,8 @@ namespace ds::adt {
     void GeneralBinarySearchTree<K, T, ItemType>::rotateLeft(BSTNodeType* node)
     {
         BSTNodeType* leftSon = node->left_;
-        BSTNodeType* parent = node->parent_;
-        BSTNodeType* grandParent = parent->parent_;
+        BSTNodeType* parent = static_cast<BSTNodeType*>(node->parent_);
+        BSTNodeType* grandParent = static_cast<BSTNodeType*>(parent->parent_);
         this->getHierarchy()->changeRightSon(*parent, nullptr);
         this->getHierarchy()->changeLeftSon(*node, nullptr);
         if (grandParent != nullptr) {
@@ -987,8 +987,8 @@ namespace ds::adt {
     void GeneralBinarySearchTree<K, T, ItemType>::rotateRight(BSTNodeType* node)
     {
         BSTNodeType* rightSon = node->right_;
-        BSTNodeType* parent = node->parent_;
-        BSTNodeType* grandParent = parent->parent_;
+        BSTNodeType* parent = static_cast<BSTNodeType*>(node->parent_);
+        BSTNodeType* grandParent = static_cast<BSTNodeType*>(parent->parent_);
         this->getHierarchy()->changeLeftSon(*parent, nullptr);
         this->getHierarchy()->changeRightSon(*node, nullptr);
         if (grandParent != nullptr) {
@@ -1023,32 +1023,32 @@ namespace ds::adt {
     template<typename K, typename T>
     void Treap<K, T>::removeNode(BSTNodeType* node)
     {
-//        node->data_.priority_ = rng_();
-//        while (this->getHierarchy()->degree(*node) == 2) {
-//            BSTNodeType* leftSon = node->left_;
-//            BSTNodeType* rightSon = node->right_;
-//            if (leftSon->data_.priority_ < rightSon->data_.priority_) {
-//                //this->GeneralBinarySearchTree<K, T, TreapItem<K, T>>::rotateRight(leftSon);
-//            } else {
-//                //this->rotateLeft(rightSon);
-//            }
-//        }
-//        //GeneralBinarySearchTree<K,T, TreapItem<K,T>>::removeNode(node);
+        node->data_.priority_ = rng_();
+        while (this->getHierarchy()->degree(*node) == 2) {
+            BSTNodeType* leftSon = node->left_;
+            BSTNodeType* rightSon = node->right_;
+            if (leftSon->data_.priority_ < rightSon->data_.priority_) {
+                this->rotateRight(static_cast<BSTNodeType*>(leftSon));
+            } else {
+                this->rotateLeft(static_cast<BSTNodeType*>(rightSon));
+            }
+        }
+        GeneralBinarySearchTree<K,T, TreapItem<K,T>>::removeNode(node);
     }
 
     template<typename K, typename T>
     void Treap<K, T>::balanceTree(BSTNodeType* node)
     {
-//        node->data_.priority_ = rng_();
-//        BSTNodeType* parent = static_cast<BSTNodeType*>(node->parent_);
-//        while (parent != nullptr && parent->data_.priority_ > node->data_.priority_) {
-//            if (parent->left_ == node) {
-//                //this->GeneralBinarySearchTree<K, T, TreapItem<K, T>>::rotateRight(node);
-//            } else {
-//                //this->rotateLeft(node);
-//            }
-//            parent = static_cast<BSTNodeType*>(node->parent_);
-//        }
+        node->data_.priority_ = rng_();
+        BSTNodeType* parent = static_cast<BSTNodeType*>(node->parent_);
+        while (parent != nullptr && parent->data_.priority_ > node->data_.priority_) {
+            if (parent->left_ == node) {
+                this->rotateRight(node);
+            } else {
+                this->rotateLeft(node);
+            }
+            parent = static_cast<BSTNodeType*>(node->parent_);
+        }
     }
 
     template<typename K, typename T>
