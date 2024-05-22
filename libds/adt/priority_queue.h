@@ -449,24 +449,23 @@ namespace ds::adt {
     template<typename P, typename T>
     void TwoLists<P, T>::push(P priority, T data) {
         PQItem<P, T> *queueData = nullptr;
-        if (shortSequence_->isEmpty() || priority < shortSequence_->accessFirst()->data_.priority_
-            || longSequence_->isEmpty() && shortSequence_->size() < shortSequence_->getCapacity()) {
-            if (shortSequence_->size() == shortSequence_->getCapacity()) {
-                ShortSequenceBlockType* shortBlock = shortSequence_->accessFirst();
-                // Ide to bez pointra V
-                LongSequenceBlockType longBlock = longSequence_->insertLast();
+        if (this->shortSequence_->isEmpty() || priority < this->shortSequence_->accessFirst()->data_.priority_
+            || this->longSequence_->isEmpty() && this->shortSequence_->size() < this->shortSequence_->getCapacity()) {
+            if (this->shortSequence_->size() == this->shortSequence_->getCapacity()) {
+                ShortSequenceBlockType* shortBlock = this->shortSequence_->accessFirst();
+                LongSequenceBlockType& longBlock = this->longSequence_->insertLast();
                 longBlock.data_.priority_ = shortBlock->data_.priority_;
                 longBlock.data_.data_ = shortBlock->data_.data_;
-                shortSequence_->removeFirst();
+                this->shortSequence_->removeFirst();
             }
-            if (shortSequence_->isEmpty() || priority < shortSequence_->accessLast()->data_.priority_) {
-                queueData = &shortSequence_->insertLast().data_;
+            if (this->shortSequence_->isEmpty() || priority < this->shortSequence_->accessLast()->data_.priority_) {
+                queueData = &this->shortSequence_->insertLast().data_;
             } else {
-                if (priority > shortSequence_->accessFirst()->data_.priority_) {
-                    queueData = &shortSequence_->insertFirst().data_;
+                if (priority > this->shortSequence_->accessFirst()->data_.priority_) {
+                    queueData = &this->shortSequence_->insertFirst().data_;
                 } else {
-                    queueData = &shortSequence_->insertBefore(*shortSequence_->findBlockWithProperty(
-                            [&priority](ShortSequenceBlockType *block) -> bool {
+                    queueData = &this->shortSequence_->insertBefore(*this->shortSequence_->findBlockWithProperty(
+                            [&priority](ShortSequenceBlockType *block) {
                                 return block->data_.priority_ <= priority;
                             })).data_;
                 }
@@ -496,8 +495,8 @@ namespace ds::adt {
         T result = this->shortSequence_->accessLast()->data_.data_;
         this->shortSequence_->removeLast();
         if (this->shortSequence_->size() == 0 && this->longSequence_->size() > 0) {
-            amt::SinglyLS<PQItem<P, T>>* oldLongSequence = this->longSequence_;
-            longSequence_ = new amt::SinglyLS<PQItem<P, T>>();
+            LongSequenceType * oldLongSequence = this->longSequence_;
+            this->longSequence_ = new LongSequenceType();
             this->shortSequence_->changeCapacity(ceil(sqrt(oldLongSequence->size())));
             while (!oldLongSequence->isEmpty()) {
                 LongSequenceBlockType* block = oldLongSequence->accessFirst();
