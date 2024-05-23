@@ -1,269 +1,187 @@
-
 #pragma once
 
-#include <complexities//complexity_analyzer.h>
+#include <complexities/complexity_analyzer.h>
 #include <libds/adt/table.h>
-#include <libds/adt/list.h>
+#include <random>
 #include <limits>
-//#include <complexities/list_analyzer.h>
+#include <vector>
 
 namespace ds::utils
 {
     /**
-	* @brief Common base for list analyzers.
-	*/
-    template<class TabType>
-    class TabAnalyzer : public ComplexityAnalyzer<TabType>
+     * @brief Common base for table analyzers.
+     */
+    template<class Table>
+    class TableAnalyzer : public ComplexityAnalyzer<Table>
     {
     protected:
-        explicit TabAnalyzer(const std::string &name);
+        explicit TableAnalyzer(const std::string& name);
 
     protected:
-        void growToSize(TabType &structure, size_t size) override;
-
-        size_t getRandomIndex() const;
-        int getRandomData() const;
+        void growToSize(Table& structure, size_t size) override;
+        int key_;
+        int data_;
+        std::vector<int> keys_;
 
     protected:
         std::default_random_engine rngData_;
-        std::default_random_engine rngIndex_;
-        size_t index_;
-        int data_;
-        std::vector<int> keyList_;
+        std::default_random_engine rngKey_;
+
     };
-    /**
-	* @brief Analyzes complexity of an insertion at the beginning.
-	*/
-    template<class TabType>
-    class TabInsertAnalyzer : public TabAnalyzer<TabType>
+
+    template<class Table>
+    class TableInsertAnalyzer : public TableAnalyzer<Table>
     {
     public:
-        explicit TabInsertAnalyzer(const std::string& name);
+        explicit TableInsertAnalyzer(const std::string& name);
 
     protected:
-        void executeOperation(TabType& structure) override;
+        void executeOperation(Table& structure) override;
     };
 
-    /**
-	* @brief Analyzes complexity of an erasure at the beginning.
-	*/
-    template<class TabType>
-    class TabRemoveAnalyzer : public TabAnalyzer<TabType>
+     template<class Table>
+     class TableRemoveAnalyzer : public TableAnalyzer<Table>
+     {
+     public:
+         explicit TableRemoveAnalyzer(const std::string& name);
+
+     protected:
+         void executeOperation(Table& structure) override;
+     };
+
+    template<class Table>
+    class TableFindAnalyzer : public TableAnalyzer<Table>
     {
     public:
-        explicit TabRemoveAnalyzer(const std::string &name);
+        explicit TableFindAnalyzer(const std::string& name);
 
     protected:
-        void executeOperation(TabType &structure) override;
+        void executeOperation(Table& structure) override;
     };
 
-    /**
-	* @brief Container for all list analyzers.
-	*/
-    class TabsAnalyzer : public CompositeAnalyzer
-    {
-    public:
-        TabsAnalyzer();
-    };
+      class TablesAnalyzer : public CompositeAnalyzer
+      {
+      public:
+          TablesAnalyzer();
+      };
 
-    //----------
+      //-----------
 
-    template<class TabType>
-    TabAnalyzer<TabType>::TabAnalyzer(const std::string& name) :
-            ComplexityAnalyzer<TabType>(name),
-            rngData_(144),
-            rngIndex_(144),
-            index_(0),
-            data_(0)
+      template<class Table>
+      TableAnalyzer<Table>::TableAnalyzer(const std::string& name) :
+        ComplexityAnalyzer<Table>(name),
+        rngData_(144),
+        rngKey_(144),
+        key_(0),
+        data_(0)
+      {
+            ComplexityAnalyzer<Table>::registerAfterReplication([this](Table& table)
+            {
+                this->keys_.clear();
+            });
+      }
+
+      template<class Table>
+      void TableAnalyzer<Table>::growToSize(Table& structure, size_t size)
+      {
+          size_t count = size - structure.size();
+          for (size_t i = 0; i < count; ++i) {
+              std::uniform_int_distribution<int> dist(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+              int key = dist(this->rngData_);
+              int data = this->rngData_();
+              while (structure.contains(key))
+              {
+                  key = dist(this->rngData_);
+              }
+              this->keys_.push_back(key);
+              structure.insert(key, data);
+          }
+
+      }
+
+      //-----------
+
+      template<class Table>
+      TableInsertAnalyzer<Table>::TableInsertAnalyzer(const std::string& name) :
+        TableAnalyzer<Table>(name)
+      {
+          ComplexityAnalyzer<Table>::registerBeforeOperation([this](Table& table)
+            {
+                std::uniform_int_distribution<int> dist(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+                this->key_ = dist(this->rngKey_);
+                while (table.contains(this->key_))
+                {
+                    this->key_ = dist(this->rngKey_);
+                }
+                this->data_ = this->rngData_();
+            });
+      }
+
+      template<class Table>
+      void TableInsertAnalyzer<Table>::executeOperation(Table& structure)
+      {
+         structure.insert(this->key_, this->data_);
+      }
+
+      //-----------
+
+      template<class Table>
+      TableRemoveAnalyzer<Table>::TableRemoveAnalyzer(const std::string& name) :
+        TableAnalyzer<Table>(name)
+      {
+          ComplexityAnalyzer<Table>::registerBeforeOperation([this](Table& table)
+          {
+              std::uniform_int_distribution<size_t> dist(0, (this->keys_.size() - 1));
+              size_t index = dist(this->rngKey_);
+              this->key_ = this->keys_[index];
+              std::swap(this->keys_[index], this->keys_.back());
+              this->keys_.pop_back();
+          });
+      }
+
+      template<class Table>
+      void TableRemoveAnalyzer<Table>::executeOperation(Table& structure)
+      {
+            structure.remove(this->key_);
+      }
+
+    template<class Table>
+    TableFindAnalyzer<Table>::TableFindAnalyzer(const std::string& name) :
+            TableAnalyzer<Table>(name)
     {
-        this->keyList_.reserve(2147483645);
-        for (int i = 1; i < 147483645; i++)
+        ComplexityAnalyzer<Table>::registerBeforeOperation([this](Table& table)
         {
-            //std::cout << "Inserting " << i << "\n";
-            this->keyList_.push_back(i);
-        }
-        ComplexityAnalyzer<TabType>::registerBeforeOperation([this](TabType& list)
-                                                             {
-                                                                 std::uniform_int_distribution<size_t> indexDist(0, list.size() - 1);
-                                                                 index_ = indexDist(rngIndex_);
-                                                                 data_ = rngData_();
-                                                             });
-        std::cout << "List size: " << this->keyList_.size() << "\n";
+            std::uniform_int_distribution<size_t> dist(0, (this->keys_.size() - 1));
+            size_t index = dist(this->rngKey_);
+            this->key_ = this->keys_.at(index);
+            });
     }
 
-    template<typename TabType>
-    void TabAnalyzer<TabType>::growToSize(TabType& structure, size_t size) {
-        //for (int i = 1; i <= size; i++) {
-        //    this->keyList_.push_back(i);
-        //}
-        //std::shuffle(this->keyList_.begin(), this->keyList_.end(), std::mt19937(std::random_device()()));
-        const size_t toInsert = size - structure.size();
-        for (size_t i = 0; i < toInsert; ++i)
-        {
-            //key = rngData_();
-            int key = this->keyList_.back();
-            this->keyList_.pop_back();
-            structure.insert(key, rngData_());
-            //keyList_.push_back(key);
-            //std::cout << "Key: " << key << " Value: " << value << "\n";
-        }
-        //this->keyList_.clear();
-        //for (int i = 1; i <= size; i++) {
-        //   this->keyList_.push_back(i*structure.size());
-        //}
-        //std::cout << "Grow to size List size: " << this->keyList_.size() << "\n";
-    }
-
-    template<class List>
-    size_t TabAnalyzer<List>::getRandomIndex() const
+    template<class Table>
+    void TableFindAnalyzer<Table>::executeOperation(Table& structure)
     {
-        return index_;
+        structure.find(this->key_);
     }
 
-    template<class List>
-    int TabAnalyzer<List>::getRandomData() const
-    {
-        return data_;
-    }
+      //-----------
 
-    template <class List>
-    TabInsertAnalyzer<List>::TabInsertAnalyzer(const std::string& name) :
-            TabAnalyzer<List>(name)
-    {
-    }
-
-    template <class List>
-    void TabInsertAnalyzer<List>::executeOperation(List& structure)
-    {
-        auto data = this->getRandomData();
-        auto key = this->keyList_.back();
-        //std::cout << "Key: " << key << " Value: " << data << "\n" << "List size: " << this->keyList_.size() << "\nStructure size: " << structure.size() << "\n";
-        structure.insert(key, data);
-        this->keyList_.pop_back();
-    }
-
-    template <class List>
-    TabRemoveAnalyzer<List>::TabRemoveAnalyzer(const std::string& name) :
-            TabAnalyzer<List>(name)
-    {
-    }
-
-    template <class List>
-    void TabRemoveAnalyzer<List>::executeOperation(List& structure)
-    {
-        if (structure.isEmpty()) {
-            return;
-        }
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(0, this->keyList_.size()- 1);
-        int randomIndex = distrib(gen);
-        std::cout << "List size: " << this->keyList_.size() << "\nRand inde: " << randomIndex << std::endl;
-        int valueFromList = this->keyList_[randomIndex];
-//        if (structure.contains(valueFromList)) {
-//            structure.remove(valueFromList);
-//        } else {
-//            std::cout << "Neni v tabulce\n";
-//        }
-        structure.remove(valueFromList);
-        //this->keyList_.remove(randomIndex);
-        this->keyList_.erase(this->keyList_.begin() + randomIndex);
-        std::cout << "List size: " << this->keyList_.size() << "\n";
-    }
-
-    //----------
-
-    inline TabsAnalyzer::TabsAnalyzer() :
-            CompositeAnalyzer("Tabs")
-    {
-        this->addAnalyzer(std::make_unique<TabInsertAnalyzer<ds::adt::SortedSTab<int, int>>>("tab-insert"));
-        this->addAnalyzer(std::make_unique<TabRemoveAnalyzer<ds::adt::SortedSequenceTable<int, int>>>("tab-remove"));
-    }
-
+      inline TablesAnalyzer::TablesAnalyzer() :
+        CompositeAnalyzer("Tables")
+      {
+          addAnalyzer(std::make_unique<TableInsertAnalyzer<ds::adt::SortedSequenceTable<int, int>>>("SortedSequenceTable-insert"));
+          addAnalyzer(std::make_unique<TableRemoveAnalyzer<ds::adt::SortedSequenceTable<int, int>>>("SortedSequenceTable-remove"));
+          addAnalyzer(std::make_unique<TableFindAnalyzer<ds::adt::SortedSequenceTable<int, int>>>("SortedSequenceTable-find"));
+          addAnalyzer(std::make_unique<TableInsertAnalyzer<ds::adt::Treap<int, int>>>("Treap-insert"));
+          addAnalyzer(std::make_unique<TableRemoveAnalyzer<ds::adt::Treap<int, int>>>("Treap-remove"));
+          addAnalyzer(std::make_unique<TableFindAnalyzer<ds::adt::Treap<int, int>>>("Treap-find"));
+          addAnalyzer(std::make_unique<TableInsertAnalyzer<ds::adt::BinarySearchTree<int, int>>>("BinarySearchTree-insert"));
+          addAnalyzer(std::make_unique<TableRemoveAnalyzer<ds::adt::BinarySearchTree<int, int>>>("BinarySearchTree-remove"));
+          addAnalyzer(std::make_unique<TableFindAnalyzer<ds::adt::BinarySearchTree<int, int>>>("BinarySearchTree-find"));
+          addAnalyzer(std::make_unique<TableInsertAnalyzer<ds::adt::UnsortedExplicitSequenceTable<int,int>>>("UnsortedExplicitSequenceTable-insert"));
+          addAnalyzer(std::make_unique<TableRemoveAnalyzer<ds::adt::UnsortedExplicitSequenceTable<int,int>>>("UnsortedExplicitSequenceTable-remove"));
+          addAnalyzer(std::make_unique<TableFindAnalyzer<ds::adt::UnsortedExplicitSequenceTable<int,int>>>("UnsortedExplicitSequenceTable-find"));
+          addAnalyzer(std::make_unique<TableInsertAnalyzer<ds::adt::UnsortedImplicitSequenceTable<int, int>>>("UnsortedImplicitSequenceTable-insert"));
+          addAnalyzer(std::make_unique<TableRemoveAnalyzer<ds::adt::UnsortedImplicitSequenceTable<int, int>>>("UnsortedImplicitSequenceTable-remove"));
+          addAnalyzer(std::make_unique<TableFindAnalyzer<ds::adt::UnsortedImplicitSequenceTable<int, int>>>("UnsortedImplicitSequenceTable-find"));
+      }
 }
-
-
-
-
-// Uprava
-/*
-namespace ds::utils {
-    template<typename TabType>
-    class TabAnalyzer : public ComplexityAnalyzer<TabType> {
-    protected:
-        explicit TabAnalyzer(const std::string& name);
-
-    protected:
-        void growToSize(TabType& structure, size_t size) override;
-    };
-
-    template<typename TabType>
-    class SortedTabInsertAnalyzer : public TabAnalyzer<TabType> {
-    protected:
-        explicit SortedTabInsertAnalyzer(const std::string& name);
-
-    protected:
-        void executeOperation(TabType& structure) override;
-    };
-
-    template<typename TabType>
-    class SortedTabRemoveAnalyzer : public TabAnalyzer<TabType> {
-    protected:
-        explicit SortedTabRemoveAnalyzer(const std::string& name);
-
-    protected:
-        void executeOperation(TabType& structure) override;
-    };
-}
- */
-
-
-
-
-
-// Z hodiny
-/*
-namespace ds::utils {
-    template<typename TabType>
-    class TabAnalyzer : public ComplexityAnalyzer<TabType> {
-    protected:
-        explicit ListAnalyzer(const std::string& name);
-    protected:
-        void growToSize(TabType& structure, size_t size) override;
-};
-    template<typename TabType>
-    class SortedTabInsertAnalyzer : public TabAnalyzer<TabType>{
-    protected:
-        explicit ListAnalyzer(const std::string& name);
-    protected:
-        void executeOperation(TabType& structure) override;
-    };
-    template<typename TabType>
-class SortedTabRemoveAnalyzer : public TabAnalyzer<TabType>
-        protected:
-            explicit ListAnalyzer(const std::string& name);
-        protected:
-            void executeOperation(TabType& structure) override;
-};
-
-
-// ----
-class BVSTabAnalyzer : public ComplexityAnalyzer<BVS<int, int>> {
-protected:
-explicit ListAnalyzer(const std::string& name);
-protected:
-void growToSize(SortedSequenceTable<int, int>& structure, size_t size) override;
-};
-class BVSTabInsertAnalyzer : public SortedTabAnalyzer {
-protected:
-    explicit ListAnalyzer(const std::string& name);
-protected:
-    void executeOperation(BVS<int, int>& structure) override;
-};
-class BVSTabRemoveAnalyzer : public SortedTabAnalyzer {
-protected:
-    explicit ListAnalyzer(const std::string& name);
-protected:
-    void executeOperation(BVS<int, int>& structure) override;
-};
-}*/
